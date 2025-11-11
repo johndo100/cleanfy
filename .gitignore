@@ -31,3 +31,7 @@ sandbox/
 
 # Cache and temp
 tmp/
+
+# Go workspace file (local only)
+go.work
+go.work.sum
