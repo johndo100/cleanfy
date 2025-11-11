@@ -10,7 +10,9 @@ import (
 	"runtime"
 )
 
-const version = "0.1.0"
+// version is injected at build time via -ldflags
+// Default value if not set during build
+var version = "dev"
 
 func main() {
 	parseFlags()
