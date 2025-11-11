@@ -1,0 +1,33 @@
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build and test artifacts
+*.test
+*.out
+*.log
+*.tmp
+*.bak
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+
+# Go module backup
+go.sum~
+vendor/
+
+# Temporary sandbox/testing
+sandbox/
+
+# Cache and temp
+tmp/
