@@ -14,6 +14,7 @@ package main
 import (
 	"errors"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -44,6 +45,8 @@ func CleanName(fullPath, name string, isDir bool) (string, error) {
 
 	// Apply case transformation
 	switch strings.ToLower(flagCase) {
+	case "", "none":
+	// keep original case
 	case "lower":
 		base = strings.ToLower(base)
 		ext = strings.ToLower(ext)
@@ -54,17 +57,18 @@ func CleanName(fullPath, name string, isDir bool) (string, error) {
 		base = toTitle(base)
 	}
 
-	// Add date prefix if requested
-	prefix := ""
-	if flagDateMode != "" {
-		prefix = getDatePrefix(fullPath, flagDateMode, flagDateFormat)
-		if prefix != "" {
-			prefix += "_"
+	// precompile the regex once (top of file or as a package-level var)
+	var datePrefixRegex = regexp.MustCompile(`^(?:\d{4}[-_.\/]?\d{2}[-_.\/]?\d{2}|\d{6})[_\-\.]`)
+
+	// 🧩 Add date prefix only when explicitly requested (-t or -date)
+	if flagDateMode != "" && !datePrefixRegex.MatchString(base) {
+		if prefix := getDatePrefix(fullPath, flagDateMode, flagDateFormat); prefix != "" {
+			base = prefix + "_" + base
 		}
 	}
 
 	// Reconstruct name
-	newName := prefix + base
+	newName := base
 	if ext != "" {
 		newName += "." + ext
 	}
