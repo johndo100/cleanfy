@@ -13,14 +13,15 @@ package main
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	"strings"
 )
 
 func CleanName(fullPath, name string, isDir bool) (string, error) {
+	// Split name into base and extension
 	var base, ext string
 
+	// Split extension
 	if !isDir {
 		if i := strings.LastIndexByte(name, '.'); i > 0 && i < len(name)-1 {
 			base, ext = name[:i], name[i+1:]
@@ -31,14 +32,17 @@ func CleanName(fullPath, name string, isDir bool) (string, error) {
 		base = name
 	}
 
+	// Normalize to ASCII
 	base = cleanASCII(base)
 	ext = cleanASCII(ext)
 
+	// POSIX filtering
 	base = posixify(base)
 	if ext != "" {
 		ext = posixify(ext)
 	}
 
+	// Apply case transformation
 	switch strings.ToLower(flagCase) {
 	case "lower":
 		base = strings.ToLower(base)
@@ -50,18 +54,16 @@ func CleanName(fullPath, name string, isDir bool) (string, error) {
 		base = toTitle(base)
 	}
 
+	// Add date prefix if requested
 	prefix := ""
-	if flagDateMode == "mtime" {
-		info, err := os.Stat(fullPath)
-		if err != nil {
-			return name, err
-		}
-		prefix = formatDate(info.ModTime(), flagDateStyle)
+	if flagDateMode != "" {
+		prefix = getDatePrefix(fullPath, flagDateMode, flagDateFormat)
 		if prefix != "" {
-			prefix += flagDelim
+			prefix += "_"
 		}
 	}
 
+	// Reconstruct name
 	newName := prefix + base
 	if ext != "" {
 		newName += "." + ext
@@ -70,9 +72,11 @@ func CleanName(fullPath, name string, isDir bool) (string, error) {
 		return name, errors.New("empty result name")
 	}
 
+	// Prevent Windows reserved names
 	if isWindowsReserved(strings.TrimSuffix(newName, filepath.Ext(newName))) {
 		newName = "_" + newName
 	}
 
+	// Return final name
 	return newName, nil
 }

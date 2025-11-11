@@ -19,15 +19,17 @@ func processOne(path string, info os.FileInfo) Result {
 	name := info.Name()
 	isDir := info.IsDir()
 
-	// 🧩 Preserve dotfiles (e.g. .env, .gitignore, .DS_Store)
-	if strings.HasPrefix(name, ".") && len(name) > 1 {
+	// 🧩 Dotfile handling
+	// By default, Cleanfy skips hidden files (starting with '.').
+	// Users can override this behavior using --dotfiles.
+	if strings.HasPrefix(name, ".") && len(name) > 1 && !flagDotfiles {
 		return Result{
-			Path:    path,
-			OldName: name,
-			NewName: name,
-			IsDir:   isDir,
-			Renamed: false,
-			Error:   "", // no error, just skipped
+			Path:       path,
+			OldName:    name,
+			NewName:    name,
+			IsDir:      isDir,
+			Renamed:    false,
+			WasSkipped: true,
 		}
 	}
 

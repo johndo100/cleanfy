@@ -7,6 +7,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -22,6 +23,11 @@ func walkAndRename() []Result {
 	}
 
 	var results []Result
+	// Warn if recursive mode is enabled
+	if flagRecursive {
+		fmt.Println("⚠️  Recursive mode enabled — Cleanfy will process all subdirectories.")
+		fmt.Println("    Use Ctrl+C to stop if this was not intended.")
+	}
 	for _, root := range args {
 		info, err := os.Stat(root)
 		if err != nil {

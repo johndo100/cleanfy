@@ -7,13 +7,14 @@ package main
 
 // Result represents the outcome of processing one file or directory.
 type Result struct {
-	Path        string `json:"path"`            // Full path to the processed file or directory
-	OldName     string `json:"old_name"`        // Original name
-	NewName     string `json:"new_name"`        // New (transformed) name
-	IsDir       bool   `json:"is_dir"`          // True if the entry is a directory
-	Renamed     bool   `json:"renamed"`         // True if a rename actually occurred
-	AutoRenamed bool   `json:"auto_renamed"`    // True if a numeric suffix was auto-added to avoid conflicts
-	Error       string `json:"error,omitempty"` // Error message if any
+	Path        string `json:"path"`              // Full path to the processed file or directory
+	OldName     string `json:"old_name"`          // Original name
+	NewName     string `json:"new_name"`          // New (transformed) name
+	IsDir       bool   `json:"is_dir"`            // True if the entry is a directory
+	Renamed     bool   `json:"renamed"`           // True if a rename actually occurred
+	WasSkipped  bool   `json:"skipped,omitempty"` // True if the entry was skipped (e.g., dotfile)
+	AutoRenamed bool   `json:"auto_renamed"`      // True if a numeric suffix was auto-added to avoid conflicts
+	Error       string `json:"error,omitempty"`   // Error message if any
 }
 
 // HasError reports whether the result contains an error.

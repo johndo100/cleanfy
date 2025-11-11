@@ -16,8 +16,8 @@ import (
 // emitResults outputs a list of results in either JSON or plain-text format,
 // depending on the selected flags.
 func emitResults(results []Result) {
-	if flagJSON || flagPretty {
-		emitJSON(results, flagPretty)
+	if flagJSON {
+		emitJSON(results, true)
 		return
 	}
 

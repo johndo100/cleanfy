@@ -1,24 +1,36 @@
 // date.go
 // --------
-// Formats timestamps according to the selected style (iso, compact, month, short, withtime).
+// Handles date prefixing for Cleanfy.
+// Supports modes: mtime (last modified) and now (current time).
+// Uses Go's time formatting layout, defaulting to ISO 8601 (2006-01-02).
 
 package main
 
-import "time"
+import (
+	"os"
+	"time"
+)
 
-func formatDate(t time.Time, style string) string {
-	switch style {
-	case "iso":
-		return t.Format("2006-01-02")
-	case "compact":
-		return t.Format("20060102")
-	case "month":
-		return t.Format("2006-01")
-	case "short":
-		return t.Format("060102")
-	case "withtime":
-		return t.Format("2006-01-02T15.04.05")
+// getDatePrefix returns a formatted date string for a given file
+// based on the selected mode: "mtime" or "now".
+func getDatePrefix(path string, mode string, layout string) string {
+	var t time.Time
+
+	switch mode {
+	case "mtime":
+		info, err := os.Stat(path)
+		if err == nil {
+			t = info.ModTime()
+		}
+	case "now":
+		t = time.Now()
 	default:
-		return t.Format("2006-01-02")
+		return "" // no -date flag provided → skip prefix
 	}
+
+	if t.IsZero() {
+		t = time.Now()
+	}
+
+	return t.Format(layout)
 }
