@@ -12,13 +12,12 @@ import (
 
 // version is injected at build time via -ldflags
 // Default value if not set during build
-var version = "dev"
 
 func main() {
 	parseFlags()
 
 	if flagVersion {
-		fmt.Printf("cleanfy %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("cleanfy %s (%s/%s)\n", getVersion(), runtime.GOOS, runtime.GOARCH)
 		return
 	}
 
