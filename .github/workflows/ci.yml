@@ -12,98 +12,53 @@ permissions:
 
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.24'
-      
+
       - name: Run tests
         run: go test ./... -v -cover
-      
+
       - name: Run vet
         run: go vet ./...
 
   build:
-    name: Build
     runs-on: ubuntu-latest
     needs: test
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.24'
-      
+
       - name: Get version from tag
         id: tag
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
-      - name: Build Linux
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.tag.outputs.VERSION }}" -o cleanfy-linux-amd64
-      
-      - name: Build macOS
-        run: CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.tag.outputs.VERSION }}" -o cleanfy-darwin-amd64
-      
-      - name: Build macOS ARM64
-        run: CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=${{ steps.tag.outputs.VERSION }}" -o cleanfy-darwin-arm64
-      
-      - name: Build Windows
-        run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.tag.outputs.VERSION }}" -o cleanfy-windows-amd64.exe
-      
-      - name: Create Release
-        uses: actions/create-release@v1
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build binaries
+        run: |
+          CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o cleanfy-linux-amd64
+          CGO_ENABLED=0 GOOS=darwin  GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o cleanfy-darwin-amd64
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o cleanfy-windows-amd64.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          name: Cleanfy ${{ github.ref_name }}
           draft: false
           prerelease: false
-      
-      - name: Upload Linux
-        uses: actions/upload-release-asset@v1
+          files: |
+            cleanfy-linux-amd64
+            cleanfy-darwin-amd64
+            cleanfy-windows-amd64.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cleanfy-linux-amd64
-          asset_name: cleanfy-linux-amd64
-          asset_content_type: application/octet-stream
-      
-      - name: Upload macOS
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cleanfy-darwin-amd64
-          asset_name: cleanfy-darwin-amd64
-          asset_content_type: application/octet-stream
-      
-      - name: Upload macOS ARM64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cleanfy-darwin-arm64
-          asset_name: cleanfy-darwin-arm64
-          asset_content_type: application/octet-stream
-      
-      - name: Upload Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cleanfy-windows-amd64.exe
-          asset_name: cleanfy-windows-amd64.exe
-          asset_content_type: application/octet-stream
