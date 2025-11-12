@@ -72,6 +72,12 @@ func parseFlags() {
 	// Parse flags
 	flag.Parse()
 
+	// Handle version early
+	if flagVersion {
+		fmt.Printf("cleanfy %s\n", getVersion())
+		os.Exit(0)
+	}
+
 	// Validate target position — all flags must come before targets
 	for i, arg := range os.Args[1:] {
 		if len(arg) > 0 && arg[0] != '-' {
